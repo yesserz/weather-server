@@ -14,6 +14,7 @@
 
         <title>{% block title %}Your page title{% endblock %}</title>
     {% endblock %}
+    <script src="../static/jquery-3.7.1.js"></script>
 </head>
 
 <body>
@@ -74,7 +75,6 @@
 {% block scripts %}
     <!-- Optional JavaScript -->
     {{ bootstrap.load_js() }}
-    <script src="../static/jquery-3.7.1.min.js"></script>
 {% endblock %}
 </body>
 

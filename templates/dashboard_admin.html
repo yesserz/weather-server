@@ -35,8 +35,8 @@
                 </div>
             </div>
             <div class="col-md-6">
-                <h5 class="text-center">Пользователи</h5>
                 <div class="border rounded p-3 m-2">
+                <h5 class="text-center">Пользователи</h5>
                     <table class="table table-bordered">
                         <thead>
                         <tr>
@@ -61,8 +61,29 @@
         <div class="row">
             <div class="col-md-6">
                 <div class="border rounded p-3 m-2">
+                    <h5 class="text-center">Данные станций</h5>
+                    <table class="table table-bordered" id="weatherData">
+                        <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Время</th>
+                            <th>Темп</th>
+                            <th>Влаж</th>
+                            <th>Давл</th>
+                            <th>Ск.Вет</th>
+                            <th>Нпр.Вет</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        </tbody>
+                    </table>
                     <!-- Добавляем скрипт для динамического обновления данных -->
                     <script>
+                        // Вызываем функцию обновления данных при загрузке страницы
+                        $(document).ready(function () {
+                            updateWeatherData();
+                        });
+
                         function updateWeatherData() {
                             $.ajax({
                                 url: "{{ url_for('weather.get_latest_weather_data') }}",  // Замените на ваш маршрут Flask
@@ -77,14 +98,12 @@
                                         $("#weatherData tbody").append(
                                             "<tr>" +
                                             "<td>" + record.id + "</td>" +
-                                            "<td>" + record.station_name + "</td>" +
                                             "<td>" + record.timestamp + "</td>" +
                                             "<td>" + record.temperature + "</td>" +
                                             "<td>" + record.humidity + "</td>" +
                                             "<td>" + record.pressure + "</td>" +
                                             "<td>" + record.wind_speed + "</td>" +
                                             "<td>" + record.wind_direction + "</td>" +
-                                            "<td>" + record.rain_intensity + "</td>" +
                                             "</tr>"
                                         );
                                     });
@@ -95,13 +114,10 @@
                             });
                         }
 
+
                         // Обновляем данные каждые 5 секунд (или другой интервал по вашему выбору)
                         setInterval(updateWeatherData, 5000);
 
-                        // Вызываем функцию обновления данных при загрузке страницы
-                        $(document).ready(function () {
-                            updateWeatherData();
-                        });
                     </script>
                 </div>
             </div>

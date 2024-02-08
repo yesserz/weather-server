@@ -12,7 +12,7 @@ def get_latest_weather_data():
     # Преобразуем данные в формат JSON
     data_json = [{
         'id': data.id,
-        'station_name': data.id,
+        'station_id': data.station_id,
         'timestamp': data.timestamp.strftime('%Y-%m-%d %H:%M:%S'),
         'temperature': data.temperature,
         'humidity': data.humidity,
