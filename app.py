@@ -1,6 +1,6 @@
 from flask import Flask
 from config import DevelopmentConfig
-from extensions import db, bootstrap, login_manager
+from extensions import db, bootstrap, login_manager, debug_toolbar
 from routes import auth, dashboard, weather_api
 
 app = Flask(__name__)
@@ -8,6 +8,7 @@ app.config.from_object(DevelopmentConfig)
 
 db.init_app(app)
 bootstrap.init_app(app)
+debug_toolbar.init_app(app)
 login_manager.init_app(app)
 
 login_manager.login_view = 'auth.login'
