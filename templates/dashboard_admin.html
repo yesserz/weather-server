@@ -4,7 +4,7 @@
 
 {% block content %}
     <div class="container mt-4">
-        <h2 class="text-center">Welcome to the Admin Dashboard, {{ current_user.username }}!</h2>
+        <h2 class="text-center">Велкам ту админ панель, {{ current_user.username }}!</h2>
         <!-- Add content specific to the admin dashboard -->
         <div class="row">
             <div class="col-md-6">
@@ -36,7 +36,7 @@
             </div>
             <div class="col-md-6">
                 <div class="border rounded p-3 m-2">
-                <h5 class="text-center">Пользователи</h5>
+                    <h5 class="text-center">Пользователи</h5>
                     <table class="table table-bordered">
                         <thead>
                         <tr>
@@ -62,21 +62,23 @@
             <div class="col-md-6">
                 <div class="border rounded p-3 m-2">
                     <h5 class="text-center">Данные станций</h5>
-                    <table class="table table-bordered" id="weatherData">
-                        <thead>
-                        <tr>
-                            <th>ID</th>
-                            <th>Время</th>
-                            <th>Темп</th>
-                            <th>Влаж</th>
-                            <th>Давл</th>
-                            <th>Ск.Вет</th>
-                            <th>Нпр.Вет</th>
-                        </tr>
-                        </thead>
-                        <tbody>
-                        </tbody>
-                    </table>
+                    <div class="overflow-y-auto">
+                        <table class="table table-bordered" id="weatherData">
+                            <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Время</th>
+                                <th>Темп</th>
+                                <th>Влаж</th>
+                                <th>Давл</th>
+                                <th>Ск.Вет</th>
+                                <th>Нпр.Вет</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            </tbody>
+                        </table>
+                    </div>
                     <!-- Добавляем скрипт для динамического обновления данных -->
                     <script>
                         // Вызываем функцию обновления данных при загрузке страницы

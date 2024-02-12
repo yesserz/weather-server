@@ -7,7 +7,7 @@ weather_bp = Blueprint('weather', __name__)
 @weather_bp.route('/api/weather/get_latest_weather_data')
 def get_latest_weather_data():
     # Получаем последние данные из базы данных
-    latest_data = WeatherData.query.order_by(WeatherData.timestamp.desc()).limit(5).all()
+    latest_data = WeatherData.query.order_by(WeatherData.id.desc()).limit(5).all()
 
     # Преобразуем данные в формат JSON
     data_json = [{

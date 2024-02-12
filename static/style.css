@@ -5,6 +5,11 @@ body {
     height: 100vh;
 }
 
+.main_page_scroll_div{
+    overflow-y: auto;
+    max-height: 400px
+}
+
 .block {
     flex: 1;
     border: 2px solid #000;
