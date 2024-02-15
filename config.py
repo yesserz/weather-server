@@ -11,6 +11,7 @@ class DevelopmentConfig(Config):
     SQLALCHEMY_DATABASE_URI = 'postgresql+psycopg://yesserz:egor2008224183@localhost:5432/weather_dev'
     SQLALCHEMY_TRACK_MODIFICATIONS = True
     SQLALCHEMY_RECORD_QUERIES = True
+    DEBUG_TB_INTERCEPT_REDIRECTS = False
     BOOTSTRAP_SERVE_LOCAL = True
 
 
