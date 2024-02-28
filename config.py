@@ -39,3 +39,5 @@ class WeatherAPICfg:
     MAX_WIND_SPEED = 100
 
     MAX_RAIN_INTENSITY = 100
+
+    MAX_LINES = 1000

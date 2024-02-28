@@ -105,7 +105,7 @@ def get_historical_weather_data() -> jsonify:
         time_for_query = get_moscow_time() - timedelta(hours=int(hours))
         latest_data = WeatherData.query.where(WeatherData.station_id == station_id).filter(
             WeatherData.timestamp >= time_for_query).order_by(
-            WeatherData.timestamp).all()
+            WeatherData.timestamp).limit(int(WeatherAPICfg.MAX_LINES)).all()
 
     if amount is not None:
         try:
@@ -118,7 +118,7 @@ def get_historical_weather_data() -> jsonify:
             return jsonify({'error': 'amount must be an integer'}), 400
         latest_data = WeatherData.query.where(WeatherData.station_id == station_id).filter(
             WeatherData.station_id == station_id).order_by(
-            WeatherData.id.desc()).limit(int(amount)).all()
+            WeatherData.id.desc()).limit(int(WeatherAPICfg.MAX_LINES)).all()
 
     if latest_data is None or len(latest_data) == 0:
         return jsonify({'error': 'no data for this station'}), 400
