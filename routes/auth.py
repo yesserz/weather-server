@@ -4,7 +4,10 @@ from forms import RegistrationForm, LoginForm
 from werkzeug.security import generate_password_hash, check_password_hash
 from extensions import db
 from db.db_users import User
+from logger import myLog
 
+
+log = myLog(__name__)
 auth_bp = Blueprint('auth', __name__)
 
 
@@ -28,6 +31,7 @@ def register():
         user = User(username=form.username.data, password=hashed_password)
         db.session.add(user)
         db.session.commit()
+        log.info(f'User {form.username.data} created successfully')
         flash('Your account has been created!', 'success')
         return redirect(url_for('auth.login'))
 
@@ -43,9 +47,11 @@ def login():
         user = User.query.filter_by(username=form.username.data).first()
         if user and check_password_hash(user.password, form.password.data):
             login_user(user)
+            log.info(f'User {form.username.data} is logged in successfully')
             flash('Login successful!', 'success')
             return redirect(url_for('auth.home'))
         else:
+            log.info(f'User {form.username.data} is not logged in successfully')
             flash('Login unsuccessful. Please check username and password.', 'danger')
     return render_template('login.html', title='Login', form=form)
 

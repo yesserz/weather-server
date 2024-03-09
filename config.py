@@ -7,16 +7,26 @@ class Config:
 
 class DevelopmentConfig(Config):
     DEBUG = True
-    TESTING = True
+    TESTING = False
     SQLALCHEMY_DATABASE_URI = 'postgresql+psycopg://yesserz:egor2008224183@localhost:5432/weather_dev'
     SQLALCHEMY_TRACK_MODIFICATIONS = True
     SQLALCHEMY_RECORD_QUERIES = True
     DEBUG_TB_INTERCEPT_REDIRECTS = False
+    WEATHER_APP_MODE = 'DEVELOPMENT'
 
 
 class ProductionConfig(Config):
+    TESTING = False
     DEBUG = False
-    # Дополнительные параметры для продакшна
+    SQLALCHEMY_DATABASE_URI = 'postgresql+psycopg://yesserz:egor2008224183@localhost:5432/weather_prod'
+    WEATHER_MODE = 'PRODUCTION'
+
+
+class TestingConfig(Config):
+    SQLALCHEMY_DATABASE_URI = 'sqlite:///:memory:'
+    WEATHER_APP_MODE = 'DEVELOPMENT'
+    TESTING = True
+    DEBUG_TB_INTERCEPT_REDIRECTS = False
 
 
 class LoggingConfig:

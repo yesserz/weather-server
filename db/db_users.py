@@ -1,6 +1,9 @@
 from extensions import db, login_manager
 from flask_login import UserMixin
 from datetime import datetime
+from logger import myLog
+
+log = myLog(__name__)
 
 
 class User(db.Model, UserMixin):
@@ -42,3 +45,17 @@ class WeatherData(db.Model):
 @login_manager.user_loader
 def load_user(user_id):
     return db.session.query(User).get(user_id)
+
+
+def create_testing_data():
+    log.info('Creating testing user...')
+    user = User(username='aboba', password='aboba_password', telegram_id='aboba_id')
+    db.session.add(user)
+    db.session.commit()
+    log.info('User aboba created successfully')
+    log.info('Creating testing station...')
+    station = WeatherStation(id=1, name='test_station', description='test_station_description', latitude=10, longitude=10, owner_id=1)
+    db.session.add(station)
+    db.session.commit()
+    log.info('Station test_station created successfully')
+

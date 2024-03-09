@@ -29,13 +29,17 @@ def get_weather_data() -> jsonify:
     stations_ids = WeatherStation.query.with_entities(WeatherStation.id).order_by(WeatherStation.id.desc()).all()
     stations_id_list = [idx[0] for idx in stations_ids]
     if station_id is None:
+        log.debug('get_weather_data: station_id is missing')
         return jsonify({'error': 'station_id is required'}), 400
     if station_id not in stations_id_list:
+        log.debug('get_weather_data: no such station')
         return jsonify({'error': 'incorrect station_id'}), 400
     latest_data = WeatherData.query.filter_by(station_id=station_id).first()
     if latest_data is None:
+        log.debug('get_weather_data: no data for this station')
         return jsonify({'error': 'no data for this station'}), 400
     data_json = make_weather_json(latest_data, True)
+    log.debug(f'get_weather_data: data_json: {data_json}')
     return jsonify(data_json), 200
 
 
@@ -55,14 +59,17 @@ def get_all_historical_weather_data() -> jsonify:
     try:
         amount = int(amount)
     except ValueError:
+        log.debug('get_all_historical_weather_data: amount must be an integer')
         return jsonify({'error': 'amount must be an integer'}), 400
 
     if current_user.is_admin():
         latest_data = WeatherData.query.order_by(WeatherData.timestamp.desc()).limit(amount)
         if latest_data is not None:
             data_json = make_weather_json(latest_data)
+            log.debug(f'get_all_historical_weather_data: data_json: {data_json}')
             return jsonify(data_json), 200
         else:
+            log.debug('get_all_historical_weather_data: no data for this station')
             return jsonify({'error': 'no data for this station'}), 400
 
 
@@ -86,24 +93,29 @@ def get_historical_weather_data() -> jsonify:
 
     if amount is None and hours is None:
         amount = WeatherAPICfg.DEFAULT_AMOUNT
+        log.debug('get_historical_weather_data: amount is not provided')
 
     latest_data = None
     stations_ids = WeatherStation.query.with_entities(WeatherStation.id).order_by(WeatherStation.id.desc()).all()
     stations_id_list = [idx[0] for idx in stations_ids]  # idx - id, но с x для избежания конфликта с функцией питона
 
     if station_id is None:
+        log.debug('get_historical_weather_data: station_id is missing')
         return jsonify({'error': 'station_id is required'}), 400
     if station_id not in stations_id_list:
+        log.debug('get_historical_weather_data: no such station')
         return jsonify({'error': 'no such station'}), 400
 
     if amount is None and hours is not None:
         try:
             hours = int(hours)
             if hours < 0:
+                log.debug('get_historical_weather_data: hours must be a positive number')
                 return jsonify({'error': 'hours must be a positive number'}), 400
             if hours > WeatherAPICfg.MAX_HOURS:
                 hours = WeatherAPICfg.DEFAULT_HOURS
         except ValueError:
+            log.debug('get_historical_weather_data: hours must be an integer')
             return jsonify({'error': 'hours must be an integer'}), 400
         time_for_query = get_moscow_time() - timedelta(hours=int(hours))
         latest_data = WeatherData.query.where(WeatherData.station_id == station_id).filter(
@@ -114,19 +126,24 @@ def get_historical_weather_data() -> jsonify:
         try:
             amount = int(amount)
             if amount < 0:
+                log.debug('get_historical_weather_data: amount must be a positive number')
                 return jsonify({'error': 'amount must be a positive number'}), 400
             if amount > WeatherAPICfg.MAX_AMOUNT:
+                log.debug(f'get_historical_weather_data: amount is too high, setting it to {WeatherAPICfg.DEFAULT_AMOUNT}')
                 amount = WeatherAPICfg.DEFAULT_AMOUNT
         except ValueError:
+            log.debug('get_historical_weather_data: amount must be an integer')
             return jsonify({'error': 'amount must be an integer'}), 400
         latest_data = WeatherData.query.where(WeatherData.station_id == station_id).filter(
             WeatherData.station_id == station_id).order_by(
             WeatherData.id.desc()).limit(int(WeatherAPICfg.MAX_LINES)).all()
 
     if latest_data is None or len(latest_data) == 0:
+        log.debug('get_historical_weather_data: no data for this station')
         return jsonify({'error': 'no data for this station'}), 400
     else:
         data_json = make_weather_json(latest_data)
+        log.debug(f'get_historical_weather_data: returned data_json: {data_json}')
         return jsonify(data_json), 200
 
 
@@ -147,7 +164,7 @@ def add_historical_weather_data() -> jsonify:
         try:
             weather_data = request.get_json()
         except (exceptions.UnsupportedMediaType, exceptions.BadRequest):
-            log.warn('JSON body is missing or not valid', exc_info=LoggingConfig.ADVANCED_ERROR_OUTPUT)
+            log.debug('JSON body is missing or not valid', exc_info=LoggingConfig.ADVANCED_ERROR_OUTPUT)
             return jsonify({'error': 'JSON body is missing or not valid'}), 400
         # Проверки на наличие необходимых полей в JSON
         required_fields = ['station_id', 'temperature', 'humidity', 'pressure', 'wind_speed',
@@ -202,7 +219,7 @@ def add_historical_weather_data() -> jsonify:
                     return jsonify({'error': 'Custom data is too long'}), 400
 
         except ValueError:
-            log.warn(f'Invalid value in the JSON body: some element contains incorrect symbols', exc_info=LoggingConfig.ADVANCED_ERROR_OUTPUT)
+            log.debug(f'Invalid value in the JSON body: some element contains incorrect symbols', exc_info=LoggingConfig.ADVANCED_ERROR_OUTPUT)
             return jsonify({'error': f'Invalid value in the JSON body: some element contains incorrect symbols'}), 400
 
         # Добавление данных в базу данных
