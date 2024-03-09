@@ -4,10 +4,13 @@ from werkzeug import exceptions
 from db.db_users import WeatherData, WeatherStation
 from datetime import timedelta
 from utils import get_moscow_time
-from config import WeatherAPICfg
+from config import WeatherAPICfg, LoggingConfig
 from typing import Union, List, Any
 from extensions import db
+from logger import myLog
 
+
+log = myLog(__name__)
 weather_bp = Blueprint('weather', __name__)
 
 
@@ -143,13 +146,15 @@ def add_historical_weather_data() -> jsonify:
     try:
         try:
             weather_data = request.get_json()
-        except exceptions.UnsupportedMediaType:
+        except (exceptions.UnsupportedMediaType, exceptions.BadRequest):
+            log.warn('JSON body is missing or not valid', exc_info=LoggingConfig.ADVANCED_ERROR_OUTPUT)
             return jsonify({'error': 'JSON body is missing or not valid'}), 400
         # Проверки на наличие необходимых полей в JSON
         required_fields = ['station_id', 'temperature', 'humidity', 'pressure', 'wind_speed',
-                           'wind_direction', 'rain_intensity']
+                           'wind_direction']
         for field in required_fields:
             if field not in weather_data:
+                log.debug(f'{field} is missing in the JSON body')
                 return jsonify({'error': f'{field} is missing in the JSON body'}), 400
 
         stations_ids = WeatherStation.query.with_entities(WeatherStation.id).order_by(WeatherStation.id.desc()).all()
@@ -157,7 +162,10 @@ def add_historical_weather_data() -> jsonify:
                             stations_ids]  # idx - id, но с x для избежания конфликта с функцией питона
 
         if weather_data['station_id'] not in stations_id_list:
+            log.debug(f'There is no stations with that ID on server')
             return jsonify({'error': 'There is no stations with that ID on server'}), 400
+
+        log.debug(f'Json from device: {weather_data}')
 
         # Проверки значений на лимиты
         try:
@@ -189,8 +197,13 @@ def add_historical_weather_data() -> jsonify:
                 return jsonify({
                     'error': f'Invalid rain intensity value. It should be "NONE" or within the range [0, {WeatherAPICfg.MAX_RAIN_INTENSITY}]'}), 400
 
-        except ValueError as ve:
-            return jsonify({'error': f'Invalid value in the JSON body: some element contains NaN'}), 400
+            if 'custom_data' in weather_data:
+                if len(weather_data['custom_data']) > WeatherAPICfg.CUSTOM_DATA_MAX_LENGTH:
+                    return jsonify({'error': 'Custom data is too long'}), 400
+
+        except ValueError:
+            log.warn(f'Invalid value in the JSON body: some element contains incorrect symbols', exc_info=LoggingConfig.ADVANCED_ERROR_OUTPUT)
+            return jsonify({'error': f'Invalid value in the JSON body: some element contains incorrect symbols'}), 400
 
         # Добавление данных в базу данных
         result = add_weather_data_to_db(weather_data)
@@ -198,7 +211,8 @@ def add_historical_weather_data() -> jsonify:
         return result
 
     except Exception as e:
-        return jsonify({'error': f'Unexpected error: {str(e)}'}), 500
+        log.error(f"{type(e).__name__} at line {e.__traceback__.tb_lineno} of {__file__}: {e}")
+        return jsonify({'error': 'Unexpected server-side error'}), 500
 
 
 def add_weather_data_to_db(weather_data: dict):
@@ -216,16 +230,18 @@ def add_weather_data_to_db(weather_data: dict):
         pressure=float(weather_data['pressure']) if weather_data['pressure'] != "NONE" else None,
         wind_speed=float(weather_data['wind_speed']) if weather_data['wind_speed'] != "NONE" else None,
         wind_direction=float(weather_data['wind_direction']) if weather_data['wind_direction'] != "NONE" else None,
-        rain_intensity=float(weather_data['rain_intensity']) if weather_data['rain_intensity'] != "NONE" else None
+        rain_intensity=float(weather_data['rain_intensity']) if weather_data['rain_intensity'] != "NONE" else None,
+        custom_data=weather_data['custom_data'] if 'custom_data' in weather_data else None
     )
 
     try:
         db.session.add(new_weather_data)
         db.session.commit()
+        log.debug(f'Weather data added successfully')
         return jsonify({'success': 'Weather data added successfully'}), 200
-    except Exception as e:
+    except Exception:
         db.session.rollback()
-        print(e)
+        log.error(f"Error occured while adding weather data to the database", exc_info=LoggingConfig.ADVANCED_ERROR_OUTPUT)
         return jsonify({'error': f'Server error occured!'}), 500
 
 

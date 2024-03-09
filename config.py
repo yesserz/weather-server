@@ -20,6 +20,12 @@ class ProductionConfig(Config):
     # Дополнительные параметры для продакшна
 
 
+class LoggingConfig:
+    LOGGING_LEVEL = 10
+    ADVANCED_ERROR_OUTPUT = True
+
+
+
 class WeatherAPICfg:
     MAX_HOURS = 240
     DEFAULT_HOURS = 1
@@ -41,3 +47,5 @@ class WeatherAPICfg:
     MAX_RAIN_INTENSITY = 100
 
     MAX_LINES = 1000
+
+    CUSTOM_DATA_MAX_LENGTH = 256  # DON'T CHANGE!

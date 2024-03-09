@@ -8,3 +8,4 @@ out
 gen
 config.py
 /config.py
+/myGlobalLog.log

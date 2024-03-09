@@ -36,6 +36,7 @@ class WeatherData(db.Model):
     wind_speed = db.Column(db.Float, nullable=True)
     wind_direction = db.Column(db.String(10), nullable=True)
     rain_intensity = db.Column(db.Float, nullable=True)
+    custom_data = db.Column(db.String(256), nullable=True)
 
 
 @login_manager.user_loader
