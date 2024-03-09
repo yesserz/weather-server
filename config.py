@@ -1,18 +1,17 @@
 # config.py
 
 class Config:
-    pass
-    # Общая конфигурация
+    SECRET_KEY = '/RYa97dGYjQ8(_-g'
+    BOOTSTRAP_SERVE_LOCAL = True
 
 
 class DevelopmentConfig(Config):
     DEBUG = True
-    SECRET_KEY = '/RYa97dGYjQ8(_-g'
+    TESTING = True
     SQLALCHEMY_DATABASE_URI = 'postgresql+psycopg://yesserz:egor2008224183@localhost:5432/weather_dev'
     SQLALCHEMY_TRACK_MODIFICATIONS = True
     SQLALCHEMY_RECORD_QUERIES = True
     DEBUG_TB_INTERCEPT_REDIRECTS = False
-    BOOTSTRAP_SERVE_LOCAL = True
 
 
 class ProductionConfig(Config):
@@ -23,7 +22,6 @@ class ProductionConfig(Config):
 class LoggingConfig:
     LOGGING_LEVEL = 10
     ADVANCED_ERROR_OUTPUT = True
-
 
 
 class WeatherAPICfg:
