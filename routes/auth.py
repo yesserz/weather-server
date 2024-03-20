@@ -3,7 +3,7 @@ from flask_login import login_user, current_user, logout_user
 from forms import RegistrationForm, LoginForm
 from werkzeug.security import generate_password_hash, check_password_hash
 from extensions import db
-from db.db_users import User
+from db.db_models import User
 from logger import myLog
 
 
@@ -28,7 +28,7 @@ def register():
             return redirect(url_for('auth.login'))
 
         hashed_password = generate_password_hash(form.password.data, method='pbkdf2:sha256')
-        user = User(username=form.username.data, password=hashed_password)
+        user = User(username=form.username.data, password=hashed_password, role='user')
         db.session.add(user)
         db.session.commit()
         log.info(f'User {form.username.data} created successfully')

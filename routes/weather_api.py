@@ -1,14 +1,13 @@
 from flask import jsonify, Blueprint, request
 from flask_login import login_required, current_user
 from werkzeug import exceptions
-from db.db_users import WeatherData, WeatherStation
+from db.db_models import WeatherData, WeatherStation
 from datetime import timedelta
 from utils import get_moscow_time
 from config import WeatherAPICfg, LoggingConfig
 from typing import Union, List, Any
 from extensions import db
 from logger import myLog
-
 
 log = myLog(__name__)
 weather_bp = Blueprint('weather', __name__)
@@ -129,14 +128,15 @@ def get_historical_weather_data() -> jsonify:
                 log.debug('get_historical_weather_data: amount must be a positive number')
                 return jsonify({'error': 'amount must be a positive number'}), 400
             if amount > WeatherAPICfg.MAX_AMOUNT:
-                log.debug(f'get_historical_weather_data: amount is too high, setting it to {WeatherAPICfg.DEFAULT_AMOUNT}')
+                log.debug(
+                    f'get_historical_weather_data: amount is too high, setting it to {WeatherAPICfg.DEFAULT_AMOUNT}')
                 amount = WeatherAPICfg.DEFAULT_AMOUNT
         except ValueError:
             log.debug('get_historical_weather_data: amount must be an integer')
             return jsonify({'error': 'amount must be an integer'}), 400
         latest_data = WeatherData.query.where(WeatherData.station_id == station_id).filter(
             WeatherData.station_id == station_id).order_by(
-            WeatherData.id.desc()).limit(int(WeatherAPICfg.MAX_LINES)).all()
+            WeatherData.id.desc()).limit(int(amount)).all()
 
     if latest_data is None or len(latest_data) == 0:
         log.debug('get_historical_weather_data: no data for this station')
@@ -219,7 +219,8 @@ def add_historical_weather_data() -> jsonify:
                     return jsonify({'error': 'Custom data is too long'}), 400
 
         except ValueError:
-            log.debug(f'Invalid value in the JSON body: some element contains incorrect symbols', exc_info=LoggingConfig.ADVANCED_ERROR_OUTPUT)
+            log.debug(f'Invalid value in the JSON body: some element contains incorrect symbols',
+                      exc_info=LoggingConfig.ADVANCED_ERROR_OUTPUT)
             return jsonify({'error': f'Invalid value in the JSON body: some element contains incorrect symbols'}), 400
 
         # Добавление данных в базу данных
@@ -242,10 +243,10 @@ def add_weather_data_to_db(weather_data: dict):
     new_weather_data = WeatherData(
         station_id=weather_data['station_id'],
         timestamp=get_moscow_time(),
-        temperature=float(weather_data['temperature']) if weather_data['temperature'] != "NONE" else None,
-        humidity=float(weather_data['humidity']) if weather_data['humidity'] != "NONE" else None,
-        pressure=float(weather_data['pressure']) if weather_data['pressure'] != "NONE" else None,
-        wind_speed=float(weather_data['wind_speed']) if weather_data['wind_speed'] != "NONE" else None,
+        temperature=round(float(weather_data['temperature']), 2) if weather_data['temperature'] != "NONE" else None,
+        humidity=round(float(weather_data['humidity']), 2) if weather_data['humidity'] != "NONE" else None,
+        pressure=round(float(weather_data['pressure']), 2) if weather_data['pressure'] != "NONE" else None,
+        wind_speed=round(float(weather_data['wind_speed']), 2) if weather_data['wind_speed'] != "NONE" else None,
         wind_direction=float(weather_data['wind_direction']) if weather_data['wind_direction'] != "NONE" else None,
         rain_intensity=float(weather_data['rain_intensity']) if weather_data['rain_intensity'] != "NONE" else None,
         custom_data=weather_data['custom_data'] if 'custom_data' in weather_data else None
@@ -258,7 +259,8 @@ def add_weather_data_to_db(weather_data: dict):
         return jsonify({'success': 'Weather data added successfully'}), 200
     except Exception:
         db.session.rollback()
-        log.error(f"Error occured while adding weather data to the database", exc_info=LoggingConfig.ADVANCED_ERROR_OUTPUT)
+        log.error(f"Error occured while adding weather data to the database",
+                  exc_info=LoggingConfig.ADVANCED_ERROR_OUTPUT)
         return jsonify({'error': f'Server error occured!'}), 500
 
 

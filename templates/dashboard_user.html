@@ -1,0 +1,99 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container mt-5">
+    <h2>Weather Data</h2>
+    <form id="stationForm" class="mb-4">
+        <div class="input-group">
+            <select name="station_id" class="form-select">
+                <option value="">Select Station</option>
+                {% for station in stations %}
+                <option value="{{ station.id }}">{{ station.name }}</option>
+                {% endfor %}
+            </select>
+            <button type="submit" class="btn btn-primary">Submit</button>
+        </div>
+    </form>
+    <div class="row" id="chartsRow">
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    const colors = [
+        'rgba(255, 99, 132, 0.8)',
+        'rgba(54, 162, 235, 0.8)',
+        'rgba(255, 206, 86, 0.8)',
+        'rgba(75, 192, 192, 0.8)',
+        'rgba(153, 102, 255, 0.8)',
+        'rgba(255, 159, 64, 0.8)'
+    ];
+
+    document.getElementById('stationForm').addEventListener('submit', function(event) {
+        event.preventDefault();
+        var stationId = document.querySelector('select[name="station_id"]').value;
+        updateCharts(stationId);
+    });
+
+    function updateCharts(stationId) {
+        fetch(`/api/weather/get_historical_data?station_id=${stationId}&amount=15`)
+            .then(response => response.json())
+            .then(data => {
+                renderCharts(data);
+            })
+            .catch(error => console.error('Error:', error));
+    }
+
+    function renderCharts(weatherData) {
+        var parameters = Object.keys(weatherData[0]); // получаем список параметров из первого элемента
+        parameters.splice(parameters.indexOf('timestamp'), 1); // удаляем timestamp из списка параметров
+        parameters.splice(parameters.indexOf('station_id'), 1); // удаляем station_id из списка параметров
+        parameters.splice(parameters.indexOf('id'), 1); // удаляем id из списка параметров
+        var chartsRow = document.getElementById('chartsRow');
+        chartsRow.innerHTML = ''; // очищаем контейнер для графиков
+        weatherData.reverse();
+        parameters.forEach(function(parameter, index) {
+            var timestamps = [];
+            var values = [];
+            weatherData.forEach(function(data) {
+                timestamps.push(data.timestamp);
+                values.push(data[parameter]);
+            });
+
+            var chartDiv = document.createElement('div');
+            chartDiv.className = 'col-md-6 mb-4';
+            chartDiv.innerHTML = `<canvas id="${parameter}Chart"></canvas>`;
+            chartsRow.appendChild(chartDiv);
+
+            var ctx = document.getElementById(parameter + 'Chart').getContext('2d');
+            var myChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: timestamps,
+                    datasets: [{
+                        label: parameter.charAt(0).toUpperCase() + parameter.slice(1), // первая буква заглавная
+                        data: values,
+                        borderColor: colors[index % colors.length], // цвет из массива, повторяется при необходимости
+                        tension: 0.1
+                    }]
+                },
+                options: {
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+        });
+    }
+
+    setInterval(function() {
+        var stationId = document.querySelector('select[name="station_id"]').value;
+        if (stationId) {
+            updateCharts(stationId);
+        }
+    }, 600000); // Обновляем каждые 5 секунд
+</script>
+{% endblock %}

@@ -37,8 +37,8 @@ class WeatherData(db.Model):
     humidity = db.Column(db.Float, nullable=True)
     pressure = db.Column(db.Float, nullable=True)
     wind_speed = db.Column(db.Float, nullable=True)
-    wind_direction = db.Column(db.String(10), nullable=True)
-    rain_intensity = db.Column(db.Float, nullable=True)
+    wind_direction = db.Column(db.Integer, nullable=True)
+    rain_intensity = db.Column(db.Integer, nullable=True)
     custom_data = db.Column(db.String(256), nullable=True)
 
 

@@ -1,15 +1,15 @@
 from flask import Flask
-from config import TestingConfig
+from config import TestingConfig, DevelopmentConfig
 from extensions import db, bootstrap, login_manager, debug_toolbar
-from routes import auth, dashboard, weather_api
+from routes import auth, dashboard, weather_api, stations
 from logger import myLog
-from db.db_users import create_testing_data
+from db.db_models import create_testing_data
 
 log = myLog(__name__)
 app = Flask(__name__)
 
-config = TestingConfig  # режим работы приложения
-log.info(f'starting app in {config.WEATHER_APP_MODE} mode')
+config = DevelopmentConfig  # режим работы приложения
+log.info(f'starting app in {config.WEATHER_APP_MODE.lower()} mode')
 
 app.config.from_object(config)
 log.info(f'app configurations loaded successfully')
@@ -30,6 +30,7 @@ login_manager.login_view = 'auth.login'
 app.register_blueprint(auth.auth_bp)
 app.register_blueprint(dashboard.dashboard_bp)
 app.register_blueprint(weather_api.weather_bp)
+app.register_blueprint(stations.stations_bp)
 log.info(f'blueprints registered successfully')
 
 with app.app_context():

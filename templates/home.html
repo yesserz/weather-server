@@ -1,12 +1,19 @@
 {% extends 'base.html' %}
 
-{% block title %}Home{% endblock %}
+{% block title %}Главная{% endblock %}
 
 {% block content %}
-    <h1>Welcome to the Home Page</h1>
-    {% if current_user.is_authenticated %}
-        <p>Hello, {{ current_user.username }}!</p>
-    {% else %}
-        <p>You are not logged in. Please <a href="{{ url_for('auth.login') }}">Login</a> or <a href="{{ url_for('auth.register') }}">Register</a>.</p>
-    {% endif %}
+    <div class="container">
+        <div class="jumbotron mt-5">
+            <h1 class="display-4">Добро пожаловать на сайт о погоде</h1>
+            {% if current_user.is_authenticated %}
+                <p class="lead">Привет, {{ current_user.username }}!</p>
+            {% else %}
+                <p class="lead">Вы не авторизованы. Пожалуйста, <a href="{{ url_for('auth.login') }}">войдите</a> или <a href="{{ url_for('auth.register') }}">зарегистрируйтесь</a>.</p>
+            {% endif %}
+            <hr class="my-4">
+            <p>Этот сайт предоставляет информацию о погоде в различных городах. Вы можете просматривать текущий прогноз погоды, а также получать уведомления о погодных изменениях.</p>
+            <p>Пожалуйста, ознакомьтесь с нашими услугами и наслаждайтесь пребыванием на нашем сайте!</p>
+        </div>
+    </div>
 {% endblock %}
